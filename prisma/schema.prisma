@@ -1,0 +1,90 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model ArchiveAccount {
+  id          String   @id @default(cuid())
+  email       String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  emails      Email[]
+  labels      Label[]
+}
+
+model Email {
+  id            String    @id @default(cuid())
+  accountId     String
+  messageId     String?
+  fromAddr      String
+  fromName      String?
+  toAddr        String
+  cc            String?
+  bcc           String?
+  subject       String
+  bodyText      String?
+  bodyHtml      String?
+  date          DateTime
+  isRead        Boolean   @default(false)
+  isStarred     Boolean   @default(false)
+  isImportant   Boolean   @default(false)
+  folder        String    @default("INBOX")
+  hasAttachment Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  account       ArchiveAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  attachments   Attachment[]
+  labels        EmailLabel[]
+  tags          EmailTag[]
+}
+
+model Label {
+  id        String   @id @default(cuid())
+  accountId String
+  name      String
+  color     String   @default("#6366f1")
+  account   ArchiveAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  emails    EmailLabel[]
+}
+
+model EmailLabel {
+  emailId String
+  labelId String
+  email   Email  @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  label   Label  @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([emailId, labelId])
+}
+
+model Tag {
+  id     String  @id @default(cuid())
+  name   String  @unique
+  color  String  @default("#6366f1")
+  emails EmailTag[]
+}
+
+model EmailTag {
+  emailId String
+  tagId   String
+  email   Email @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  tag     Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([emailId, tagId])
+}
+
+model Attachment {
+  id        String @id @default(cuid())
+  emailId   String
+  filename  String
+  mimeType  String
+  size      Int
+  content   Bytes
+  email     Email  @relation(fields: [emailId], references: [id], onDelete: Cascade)
+}
