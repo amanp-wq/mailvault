@@ -18,7 +18,7 @@ export default function Home() {
   const { sidebarOpen, setSidebarOpen } = useEmailStore();
 
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <div className="flex h-dvh flex-col bg-background overflow-hidden">
       {/* Top Navigation Bar */}
       <header className="flex items-center gap-3 border-b px-3 py-2">
         <Button
